@@ -1,0 +1,82 @@
+name: Deploy MinionTank
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AZURE_WEBAPP_NAME: app-miniontank-nl
+  AZURE_RESOURCE_GROUP: minion-tank-nicolaslayne
+  AZURE_CLIENT_ID: a134a2f1-7309-4836-b88f-6f4098ee683d
+  AZURE_TENANT_ID: 72f988bf-86f1-41af-91ab-2d7cd011db47
+  AZURE_SUBSCRIPTION_ID: 3e46a9c7-9eb2-4697-9952-0c36379e7c2a
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Build frontend
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run build
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: dotnet publish
+        run: dotnet publish dotnet-test-app.csproj -c Release -o publish
+
+      - name: Stamp commit metadata
+        run: |
+          echo "COMMIT_SHA=${GITHUB_SHA}" >> publish/.commit
+          echo "BUILT_AT=$(date -u +%FT%TZ)" >> publish/.commit
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app
+          path: publish
+
+  deploy-staging:
+    runs-on: ubuntu-latest
+    needs: build
+    environment:
+      name: staging
+      url: https://${{ env.AZURE_WEBAPP_NAME }}-staging.azurewebsites.net
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: app
+          path: publish
+
+      - name: Azure login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ env.AZURE_CLIENT_ID }}
+          tenant-id: ${{ env.AZURE_TENANT_ID }}
+          subscription-id: ${{ env.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Deploy to staging slot
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
+          slot-name: staging
+          package: publish

@@ -1,5 +1,5 @@
 import { Routes, Route, Link, useLocation } from 'react-router-dom';
-import { makeStyles, tokens, Body1Strong, Caption1 } from '@fluentui/react-components';
+import { makeStyles, tokens, Body1Strong, Caption1, Button } from '@fluentui/react-components';
 import { Feed } from './pages/Feed';
 import { PostDetail } from './pages/PostDetail';
 import { Agents } from './pages/Agents';
@@ -15,6 +15,7 @@ const useStyles = makeStyles({
     flexDirection: 'column',
   },
   header: {
+    border: `0 solid transparent`,
     borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
     padding: '14px 24px',
     display: 'flex',
@@ -49,6 +50,11 @@ const useStyles = makeStyles({
   },
   whoami: {
     display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
+  },
+  whoamiText: {
+    display: 'flex',
     flexDirection: 'column',
     alignItems: 'flex-end',
     gap: '2px',
@@ -63,6 +69,11 @@ const useStyles = makeStyles({
   },
 });
 
+const loginUrl = (returnTo = window.location.pathname + window.location.search) =>
+  `/.auth/login/aad?post_login_redirect_uri=${encodeURIComponent(returnTo)}`;
+
+const logoutUrl = () => '/.auth/logout?post_logout_redirect_uri=/';
+
 export function App() {
   const styles = useStyles();
   const location = useLocation();
@@ -75,6 +86,8 @@ export function App() {
   const linkCls = (path: string) =>
     location.pathname === path ? `${styles.navLink} ${styles.navLinkActive}` : styles.navLink;
 
+  const isHuman = principal?.kind === 'Human' || principal?.kind === 'Dev';
+
   return (
     <div className={styles.app}>
       <header className={styles.header}>
@@ -86,10 +99,23 @@ export function App() {
           </nav>
         </div>
         <div className={styles.whoami}>
-          <Body1Strong>{principal?.displayName ?? '\u2014'}</Body1Strong>
-          <Caption1 style={{ color: tokens.colorNeutralForeground3 }}>
-            {principal?.kind ?? 'unauthenticated'}
-          </Caption1>
+          {isHuman ? (
+            <>
+              <div className={styles.whoamiText}>
+                <Body1Strong>{principal?.displayName ?? '\u2014'}</Body1Strong>
+                <Caption1 style={{ color: tokens.colorNeutralForeground3 }}>
+                  {principal?.kind ?? 'unauthenticated'}
+                </Caption1>
+              </div>
+              <Button appearance="subtle" size="small" as="a" href={logoutUrl()}>
+                Sign out
+              </Button>
+            </>
+          ) : (
+            <Button appearance="primary" size="small" as="a" href={loginUrl()}>
+              Sign in
+            </Button>
+          )}
         </div>
       </header>
 
@@ -97,7 +123,7 @@ export function App() {
         <Routes>
           <Route path="/" element={<Feed />} />
           <Route path="/posts/:postId" element={<PostDetail />} />
-          <Route path="/agents" element={<Agents />} />
+          <Route path="/agents" element={<Agents principal={principal} />} />
         </Routes>
       </main>
     </div>

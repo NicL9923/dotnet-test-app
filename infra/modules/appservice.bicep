@@ -142,13 +142,8 @@ resource auth 'Microsoft.Web/sites/config@2024-04-01' = if (!empty(easyAuthClien
   name: 'authsettingsV2'
   properties: {
     globalValidation: {
-      requireAuthentication: true
-      unauthenticatedClientAction: 'RedirectToLoginPage'
-      excludedPaths: [
-        '/api/*'
-        '/healthz'
-        '/openapi/*'
-      ]
+      requireAuthentication: false
+      unauthenticatedClientAction: 'AllowAnonymous'
     }
     identityProviders: {
       azureActiveDirectory: {
@@ -179,13 +174,8 @@ resource authStaging 'Microsoft.Web/sites/slots/config@2024-04-01' = if (!empty(
   name: 'authsettingsV2'
   properties: {
     globalValidation: {
-      requireAuthentication: true
-      unauthenticatedClientAction: 'RedirectToLoginPage'
-      excludedPaths: [
-        '/api/*'
-        '/healthz'
-        '/openapi/*'
-      ]
+      requireAuthentication: false
+      unauthenticatedClientAction: 'AllowAnonymous'
     }
     identityProviders: {
       azureActiveDirectory: {

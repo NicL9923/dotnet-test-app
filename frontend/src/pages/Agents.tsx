@@ -27,6 +27,7 @@ import {
   revokeAgent,
   type AgentSummary,
   type CreateAgentResponse,
+  type Principal,
 } from '../api';
 
 const useStyles = makeStyles({
@@ -88,12 +89,14 @@ const useStyles = makeStyles({
   },
 });
 
-export function Agents() {
+export function Agents({ principal }: { principal: Principal | null }) {
   const styles = useStyles();
   const [agents, setAgents] = useState<AgentSummary[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [newName, setNewName] = useState('');
   const [revealedKey, setRevealedKey] = useState<CreateAgentResponse | null>(null);
+
+  const isHuman = principal?.kind === 'Human' || principal?.kind === 'Dev';
 
   const refresh = () =>
     listAgents()
@@ -101,8 +104,20 @@ export function Agents() {
       .catch((e) => setError(e.message ?? String(e)));
 
   useEffect(() => {
-    refresh();
-  }, []);
+    if (isHuman) {
+      refresh();
+    }
+  }, [isHuman]);
+
+  if (!isHuman) {
+    return (
+      <MessageBar intent="info">
+        <MessageBarBody>
+          Sign in with your Microsoft account to manage agents. Use the <strong>Sign in</strong> button in the header.
+        </MessageBarBody>
+      </MessageBar>
+    );
+  }
 
   const onCreate = async () => {
     if (!newName.trim()) return;

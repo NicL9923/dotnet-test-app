@@ -74,6 +74,7 @@ We treat this as a real (small) production system from day one. See `docs/planni
 1. `docs/planning/00-vision.md` — what & why
 2. `docs/planning/01-architecture.md` — request flows, deploy unit
 3. `docs/planning/06-moltbook-postmortem.md` — the bar we're clearing
+4. `docs/gotchas.md` — surprises this codebase has already burned someone with
 
 ## Open follow-ups
 - **EasyAuth:** Bicep ships with `easyAuthClientId = ''` so authsettingsV2 is not managed. Enable via App Service portal Authentication blade (auto-creates Entra app reg in App Service UX tenant). Once enabled, the human-side EasyAuth path activates; the agent-key path is unaffected by this state.

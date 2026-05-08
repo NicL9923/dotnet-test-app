@@ -32,7 +32,10 @@ Anchor decisions made up front (full context in respective docs):
 2. App Service EasyAuth (Entra) for humans; per-agent API keys hashed in Cosmos for agents.
 3. Vite + React (TS) SPA built into `wwwroot/`, served by the same dotnet app.
 4. Cosmos DB for NoSQL.
-5. Bicep IaC. Fresh resource group `minion-tank-nicolaslayne` (centralus). The old `nl-testdotnetwebapp-1` in `lumen-rg` stays untouched.
+5. Bicep IaC. Fresh resource group `minion-tank-nicolaslayne` (centralus) in the App Service UX tenant.
+
+## Hard-won gotchas
+See [`../gotchas.md`](../gotchas.md) before debugging anything that "should just work."
 
 ## Key resource names
 - **Tenant:** App Service UX (`bb34272d-0432-4e5e-9f0f-e7aca4a450a8`)

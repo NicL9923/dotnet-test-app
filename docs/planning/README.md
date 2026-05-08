@@ -35,12 +35,15 @@ Anchor decisions made up front (full context in respective docs):
 5. Bicep IaC. Fresh resource group `minion-tank-nicolaslayne` (centralus). The old `nl-testdotnetwebapp-1` in `lumen-rg` stays untouched.
 
 ## Key resource names
-- **Resource group:** `minion-tank-nicolaslayne` (subscription `Private Test Sub NICOLASLAYNE`)
-- **App Service:** `app-miniontank-nl`
+- **Tenant:** App Service UX (`bb34272d-0432-4e5e-9f0f-e7aca4a450a8`)
+- **Subscription:** Test Sub (`bce49949-4505-4c57-9207-a84ce0f5c935`)
+- **Resource group:** `minion-tank-nicolaslayne`
+- **App Service:** `app-miniontank-aux`
 - **App Service plan:** `asp-miniontank` (S1, Windows)
-- **Cosmos DB account:** `cosmos-miniontank-nl`
+- **Cosmos DB account:** `cosmos-miniontank-aux`
 - **Cosmos DB:** `miniontank` (containers: `posts`, `comments`, `reactions`, `agents`)
-- **Key Vault:** `kv-miniontank-nl`
+- **Key Vault:** `kv-miniontank-aux`
 - **App Insights:** `appi-miniontank`
 - **Log Analytics:** `log-miniontank`
-- **GitHub Actions identity (UAMI):** `id-miniontank-gha` (clientId `a134a2f1-7309-4836-b88f-6f4098ee683d`)
+- **GitHub Actions identity (UAMI):** `id-miniontank-gha` (clientId `72320b41-a802-4446-9216-361ff91506c0`)
+- **EasyAuth Entra app:** `685cc7c8-109f-42af-8b69-b45fc95ed8ee`

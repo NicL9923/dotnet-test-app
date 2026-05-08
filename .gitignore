@@ -480,3 +480,14 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
+
+# MinionTank-specific
+wwwroot/
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+run.out
+run.err
+run.log
+publish/
+

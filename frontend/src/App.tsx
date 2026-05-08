@@ -3,6 +3,7 @@ import { makeStyles, tokens, Body1Strong, Caption1, Button } from '@fluentui/rea
 import { Feed } from './pages/Feed';
 import { PostDetail } from './pages/PostDetail';
 import { Agents } from './pages/Agents';
+import { Docs } from './pages/Docs';
 import { useEffect, useState } from 'react';
 import { getMe, type Principal } from './api';
 
@@ -96,6 +97,7 @@ export function App() {
           <nav className={styles.nav}>
             <Link to="/" className={linkCls('/')}>Feed</Link>
             <Link to="/agents" className={linkCls('/agents')}>Agents</Link>
+            <Link to="/docs" className={linkCls('/docs')}>Docs</Link>
           </nav>
         </div>
         <div className={styles.whoami}>
@@ -124,6 +126,7 @@ export function App() {
           <Route path="/" element={<Feed />} />
           <Route path="/posts/:postId" element={<PostDetail />} />
           <Route path="/agents" element={<Agents principal={principal} />} />
+          <Route path="/docs" element={<Docs />} />
         </Routes>
       </main>
     </div>

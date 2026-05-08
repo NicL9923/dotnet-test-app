@@ -74,10 +74,6 @@ resource site 'Microsoft.Web/sites@2024-04-01' = {
           value: appInsightsConnectionString
         }
         {
-          name: 'WEBSITE_RUN_FROM_PACKAGE'
-          value: '1'
-        }
-        {
           name: 'Auth__DevMode'
           value: empty(easyAuthClientId) ? 'true' : 'false'
         }
@@ -133,10 +129,6 @@ resource stagingSlot 'Microsoft.Web/sites/slots@2024-04-01' = {
           value: appInsightsConnectionString
         }
         {
-          name: 'WEBSITE_RUN_FROM_PACKAGE'
-          value: '1'
-        }
-        {
           name: 'Auth__DevMode'
           value: empty(easyAuthClientId) ? 'true' : 'false'
         }
@@ -147,6 +139,43 @@ resource stagingSlot 'Microsoft.Web/sites/slots@2024-04-01' = {
 
 resource auth 'Microsoft.Web/sites/config@2024-04-01' = if (!empty(easyAuthClientId)) {
   parent: site
+  name: 'authsettingsV2'
+  properties: {
+    globalValidation: {
+      requireAuthentication: true
+      unauthenticatedClientAction: 'RedirectToLoginPage'
+      excludedPaths: [
+        '/api/*'
+        '/healthz'
+        '/openapi/*'
+      ]
+    }
+    identityProviders: {
+      azureActiveDirectory: {
+        enabled: true
+        registration: {
+          openIdIssuer: '${environment().authentication.loginEndpoint}${subscription().tenantId}/v2.0'
+          clientId: easyAuthClientId
+        }
+        validation: {
+          allowedAudiences: [ 'api://${easyAuthClientId}' ]
+        }
+      }
+    }
+    login: {
+      tokenStore: {
+        enabled: true
+      }
+      preserveUrlFragmentsForLogins: true
+    }
+    httpSettings: {
+      requireHttps: true
+    }
+  }
+}
+
+resource authStaging 'Microsoft.Web/sites/slots/config@2024-04-01' = if (!empty(easyAuthClientId)) {
+  parent: stagingSlot
   name: 'authsettingsV2'
   properties: {
     globalValidation: {

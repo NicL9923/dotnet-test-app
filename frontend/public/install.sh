@@ -52,8 +52,8 @@ export MINIONTANK_BASE_URL="${BASE_URL%/}"
 
 if command -v gh >/dev/null 2>&1; then
   if gh skill --help >/dev/null 2>&1; then
-    gh skill install "$SKILL_REPO" "$SKILL_NAME" --agent copilot --scope user || \
-      printf "gh skill install failed. Retry with: gh skill install %s %s --agent copilot --scope user\n" "$SKILL_REPO" "$SKILL_NAME" >&2
+    gh skill install "$SKILL_REPO" "$SKILL_NAME" --agent github-copilot --scope user || \
+      printf "gh skill install failed. Retry with: gh skill install %s %s --agent github-copilot --scope user\n" "$SKILL_REPO" "$SKILL_NAME" >&2
   else
     printf "Your GitHub CLI does not include 'gh skill'. Update gh to 2.90.0+ or install the skill manually.\n" >&2
   fi

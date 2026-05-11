@@ -15,6 +15,35 @@ param appInsightsConnectionString string
 @description('Entra app registration clientId for EasyAuth. If empty, EasyAuth is left disabled and the resource ships in "dev" auth mode.')
 param easyAuthClientId string = ''
 
+@description('GitHub repository URL configured on the staging slot Deployment Center integration.')
+param githubRepoUrl string = 'https://github.com/NicL9923/dotnet-test-app'
+
+@description('GitHub branch configured on the staging slot Deployment Center integration.')
+param githubBranch string = 'main'
+
+@description('Client ID of the OIDC app registration created by App Service Deployment Center for staging deployments.')
+param githubDeploymentClientId string = ''
+
+var publicAccessRules = [
+  {
+    name: 'Allow all'
+    ipAddress: 'Any'
+    action: 'Allow'
+    priority: 2147483647
+    description: 'Allow all access'
+  }
+]
+
+var scmDenyRules = [
+  {
+    name: 'Deny all'
+    ipAddress: 'Any'
+    action: 'Deny'
+    priority: 2147483647
+    description: 'Deny all access'
+  }
+]
+
 resource plan 'Microsoft.Web/serverfarms@2024-04-01' = {
   name: planName
   location: location
@@ -38,16 +67,24 @@ resource site 'Microsoft.Web/sites@2024-04-01' = {
   properties: {
     serverFarmId: plan.id
     httpsOnly: true
+    publicNetworkAccess: 'Enabled'
     clientAffinityEnabled: false
     siteConfig: {
       netFrameworkVersion: 'v10.0'
       alwaysOn: true
-      ftpsState: 'FtpsOnly'
+      ftpsState: 'Disabled'
       http20Enabled: true
       minTlsVersion: '1.2'
+      scmMinTlsVersion: '1.2'
       healthCheckPath: '/healthz'
       use32BitWorkerProcess: false
       defaultDocuments: [ 'index.html' ]
+      phpVersion: ''
+      scmType: 'None'
+      ipSecurityRestrictions: publicAccessRules
+      scmIpSecurityRestrictions: scmDenyRules
+      scmIpSecurityRestrictionsDefaultAction: 'Deny'
+      scmIpSecurityRestrictionsUseMain: false
       appSettings: [
         {
           name: 'ASPNETCORE_ENVIRONMENT'
@@ -93,16 +130,24 @@ resource stagingSlot 'Microsoft.Web/sites/slots@2024-04-01' = {
   properties: {
     serverFarmId: plan.id
     httpsOnly: true
+    publicNetworkAccess: 'Enabled'
     clientAffinityEnabled: false
     siteConfig: {
       netFrameworkVersion: 'v10.0'
       alwaysOn: true
-      ftpsState: 'FtpsOnly'
+      ftpsState: 'Disabled'
       http20Enabled: true
       minTlsVersion: '1.2'
+      scmMinTlsVersion: '1.2'
       healthCheckPath: '/healthz'
       use32BitWorkerProcess: false
       defaultDocuments: [ 'index.html' ]
+      phpVersion: ''
+      scmType: 'GitHubAction'
+      ipSecurityRestrictions: publicAccessRules
+      scmIpSecurityRestrictions: scmDenyRules
+      scmIpSecurityRestrictionsDefaultAction: 'Deny'
+      scmIpSecurityRestrictionsUseMain: false
       appSettings: [
         {
           name: 'ASPNETCORE_ENVIRONMENT'
@@ -198,6 +243,41 @@ resource authStaging 'Microsoft.Web/sites/slots/config@2024-04-01' = if (!empty(
     httpSettings: {
       requireHttps: true
     }
+  }
+}
+
+resource stagingSourceControl 'Microsoft.Web/sites/slots/sourcecontrols@2024-04-01' = if (!empty(githubDeploymentClientId)) {
+  parent: stagingSlot
+  name: 'web'
+  properties: {
+    repoUrl: githubRepoUrl
+    branch: githubBranch
+    isManualIntegration: false
+    isGitHubAction: true
+    deploymentRollbackEnabled: false
+    gitHubActionConfiguration: any({
+      generateWorkflowFile: true
+      isLinux: false
+      codeConfiguration: null
+      containerConfiguration: null
+      workflowSettings: {
+        appType: 'webapp'
+        authType: 'oidc'
+        os: 'windows'
+        publishType: 'code'
+        runtimeStack: 'dotnetcore'
+        useCanaryFusionServer: false
+        workflowApiVersion: '2022-10-01'
+        variables: {
+          branch: githubBranch
+          clientId: githubDeploymentClientId
+          runtimeVersion: '10.0'
+          siteName: '${appServiceName}(staging)'
+          slotName: 'staging'
+          tenantId: subscription().tenantId
+        }
+      }
+    })
   }
 }
 

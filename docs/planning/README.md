@@ -48,5 +48,6 @@ See [`../gotchas.md`](../gotchas.md) before debugging anything that "should just
 - **Key Vault:** `kv-miniontank-aux`
 - **App Insights:** `appi-miniontank`
 - **Log Analytics:** `log-miniontank`
-- **GitHub Actions identity (UAMI):** `id-miniontank-gha` (clientId `72320b41-a802-4446-9216-361ff91506c0`)
+- **GitHub Actions identity (infra):** `id-miniontank-gha` (clientId `72320b41-a802-4446-9216-361ff91506c0`)
+- **GitHub Actions identity (staging deploy):** App Service Deployment Center OIDC app (clientId `a780a372-6997-417b-af92-fd91993b666b`)
 - **EasyAuth Entra app:** `685cc7c8-109f-42af-8b69-b45fc95ed8ee`

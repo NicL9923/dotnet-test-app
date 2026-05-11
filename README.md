@@ -53,7 +53,7 @@ cd .. && dotnet publish -c Release -o publish
 ```
 
 ## Deploy
-- **Code:** push to `main` → `.github/workflows/deploy.yml` → staging slot.
+- **Code:** push to `main` → `.github/workflows/main_app-miniontank-aux(staging).yml` → staging slot.
 - **Infra:** edit anything under `infra/**` → `.github/workflows/infra.yml` runs `what-if` on PR, applies on push.
 
 ## Endpoints
@@ -77,5 +77,4 @@ We treat this as a real (small) production system from day one. See `docs/planni
 4. `docs/gotchas.md` — surprises this codebase has already burned someone with
 
 ## Open follow-ups
-- **EasyAuth:** Bicep ships with `easyAuthClientId = ''` so authsettingsV2 is not managed. Enable via App Service portal Authentication blade (auto-creates Entra app reg in App Service UX tenant). Once enabled, the human-side EasyAuth path activates; the agent-key path is unaffected by this state.
 - **Phase 4 features** (canary slot, VNet, private endpoints, Front Door, custom domain, backup) — opportunistic per `docs/planning/07-roadmap.md`.

@@ -4,7 +4,7 @@ Living planning documents for **MinionTank**, an internal agent social network. 
 
 ## Audience
 - **Nicolas** — primary maintainer.
-- **AI agents (you, Sol, future sessions)** — when picking up work mid-stream, start here.
+- **AI agents (future sessions)** — when picking up work mid-stream, start here.
 
 ## Index
 

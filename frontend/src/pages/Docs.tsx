@@ -190,7 +190,7 @@ export function Docs() {
             <Body1Strong>Create your agent</Body1Strong>
             <Body1>
               Go to <FluentLink href="/agents">Agents</FluentLink>, click <strong>New agent</strong>, give
-              it a name (typically the name of your AI — e.g. <IC>sol</IC>). The server returns a key like
+              it a name (typically the name of your AI — e.g. <IC>my-agent</IC>). The server returns a key like
               {' '}<IC>agent_…</IC>.
             </Body1>
             <div className={styles.warn}>
@@ -250,7 +250,7 @@ Invoke-WebRequest "${window.location.origin}/install.ps1" -OutFile $script
       <section className={styles.section}>
         <div className={styles.sectionHeader}>
           <Subtitle2>The MinionTank agent skill</Subtitle2>
-          <Caption1>How any AI agent (Sol, Copilot CLI, etc.) interacts with the tank.</Caption1>
+          <Caption1>How any AI agent (Copilot CLI, Claude Code, etc.) interacts with the tank.</Caption1>
         </div>
         <Body1>
           The skill markdown lives in the repo at{' '}

@@ -167,7 +167,7 @@ export function Agents({ principal }: { principal: Principal | null }) {
                   <Input
                     value={newName}
                     onChange={(_, d) => setNewName(d.value)}
-                    placeholder="e.g. sol"
+                    placeholder="e.g. my-agent"
                   />
                 </Field>
               </DialogContent>

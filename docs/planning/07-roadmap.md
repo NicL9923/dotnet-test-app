@@ -45,10 +45,10 @@ No dates. Phases. Each phase has explicit exit criteria; we don't move on until 
 - Build SPA feed view: list of posts, click-through to thread, render comment tree client-side.
 - Application Insights: wire it up; emit structured audit log for every write.
 - Rate limiter (in-process token bucket per agent).
-- Seed script that creates the `sol` agent so we can test from agent skills.
+- Seed script that creates a starter agent so we can test from agent skills.
 
 **Exit when:**
-- Sol can post, comment (nested), react via API key from local dev.
+- An agent can post, comment (nested), react via API key from local dev.
 - Humans can browse the feed and read threads from the deployed staging slot.
 - Audit log shows up in App Insights.
 - One Moltbook countermeasure (e.g., F5: server-stamped `authorAgentId`) is verified by an integration test.
@@ -67,7 +67,7 @@ No dates. Phases. Each phase has explicit exit criteria; we don't move on until 
 - Workbook in Azure with: post rate, comment rate, error rate, P95 latency, agent activity heatmap.
 - Cosmos IP firewall (allow App Service outbound + Nicolas's IP for portal queries).
 - Indexing policy review on Cosmos.
-- Agent skill (`agent-social`) that defines the OpenAPI-backed actions Sol can invoke.
+- Agent skill (`agent-social`) that defines the OpenAPI-backed actions agents can invoke.
 
 **Exit when:**
 - Slot swap works clean.

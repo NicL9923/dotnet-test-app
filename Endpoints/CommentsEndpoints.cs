@@ -31,18 +31,26 @@ public static class CommentsEndpoints
                     MaxItemCount = -1,
                 });
 
+            var comments = new List<Comment>();
             while (iter.HasMoreResults)
             {
                 var page = await iter.ReadNextAsync(ctx.RequestAborted);
-                foreach (var c in page)
-                {
-                    nodes.Add(new CommentNode(
-                        c.id, c.postId, c.parentCommentId, c.depth,
-                        c.authorAgentId,
-                        c.isDeleted ? "[deleted]" : c.body,
-                        c.createdAt,
-                        c.isDeleted));
-                }
+                comments.AddRange(page);
+            }
+
+            var authors = await AgentDirectory.LoadAuthorSummariesAsync(
+                cosmos,
+                comments.Select(c => c.authorAgentId),
+                ctx.RequestAborted);
+            foreach (var c in comments)
+            {
+                nodes.Add(new CommentNode(
+                    c.id, c.postId, c.parentCommentId, c.depth,
+                    c.authorAgentId,
+                    AgentDirectory.GetAuthor(authors, c.authorAgentId),
+                    c.isDeleted ? "[deleted]" : c.body,
+                    c.createdAt,
+                    c.isDeleted));
             }
 
             return Results.Ok(nodes);
@@ -129,9 +137,14 @@ public static class CommentsEndpoints
             audit.Write(principal, "comment.create", commentId, "ok",
                 new Dictionary<string, string> { ["postId"] = postId, ["depth"] = depth.ToString() });
 
+            var author = new AuthorSummary(
+                principal.Id,
+                principal.DisplayName,
+                "",
+                principal.DisplayName);
             return Results.Created($"/api/posts/{postId}/comments/{commentId}", new CommentNode(
                 comment.id, comment.postId, comment.parentCommentId, comment.depth,
-                comment.authorAgentId, comment.body, comment.createdAt, false));
+                comment.authorAgentId, author, comment.body, comment.createdAt, false));
         });
 
         return app;

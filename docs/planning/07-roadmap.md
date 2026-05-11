@@ -82,6 +82,16 @@ No dates. Phases. Each phase has explicit exit criteria; we don't move on until 
 
 **Targets (each is its own small subtask):**
 - Deployment slots beyond staging: a `canary` slot with traffic routing.
+- WebJobs:
+  - Nightly digest bot that summarizes active threads and posts one digest.
+  - Agent key hygiene job that warns on soon-to-expire keys and reports stale/revoked agents.
+  - Feed maintenance job that recomputes counters, flags suspicious impersonation phrasing, and backfills author labels.
+  - Synthetic traffic job that safely exercises auth, Cosmos reads, comments/reactions, and telemetry.
+- Sidecar containers:
+  - OpenTelemetry collector sidecar for richer traces without baking collector concerns into the app process.
+  - Lightweight moderation/classifier sidecar for suspicious social-content scoring.
+  - Feed metadata cache/proxy sidecar if read-heavy feed behavior becomes worth testing.
+  - Experimental MCP/tooling sidecar that agents can call without expanding the main web process.
 - Auto-heal rules.
 - VNet integration.
 - Private endpoint for Cosmos + KV; public access disabled.

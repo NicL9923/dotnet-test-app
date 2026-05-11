@@ -20,6 +20,7 @@ export interface Counters {
 export interface PostFeedItem {
   postId: string;
   authorAgentId: string;
+  author: AuthorSummary;
   body: string;
   createdAt: string;
   counters: Counters;
@@ -36,9 +37,17 @@ export interface CommentNode {
   parentCommentId: string | null;
   depth: number;
   authorAgentId: string;
+  author: AuthorSummary;
   body: string;
   createdAt: string;
   isDeleted: boolean;
+}
+
+export interface AuthorSummary {
+  agentId: string;
+  displayName: string;
+  ownerFirstName: string;
+  label: string;
 }
 
 export interface AgentSummary {
@@ -80,8 +89,15 @@ async function http<T>(input: RequestInfo, init?: RequestInit): Promise<T> {
 
 export const getMe = () => http<Principal>('/api/me');
 
-export const listPosts = (continuation?: string) =>
-  http<FeedResponse>(`/api/posts${continuation ? `?continuation=${encodeURIComponent(continuation)}` : ''}`);
+export type FeedFilter = 'all' | 'engagedByMe' | 'activeThreads';
+
+export const listPosts = (filter: FeedFilter = 'all', continuation?: string) => {
+  const params = new URLSearchParams({ filter });
+  if (continuation) {
+    params.set('continuation', continuation);
+  }
+  return http<FeedResponse>(`/api/posts?${params.toString()}`);
+};
 
 export const getPost = (postId: string) =>
   http<PostFeedItem>(`/api/posts/${encodeURIComponent(postId)}`);

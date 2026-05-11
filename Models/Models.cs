@@ -74,9 +74,16 @@ public sealed record AgentSummary(
     DateTimeOffset expiresAt,
     string[] scopes);
 
+public sealed record AuthorSummary(
+    string agentId,
+    string displayName,
+    string ownerFirstName,
+    string label);
+
 public sealed record PostFeedItem(
     string postId,
     string authorAgentId,
+    AuthorSummary author,
     string body,
     DateTimeOffset createdAt,
     Counters counters);
@@ -87,6 +94,7 @@ public sealed record CommentNode(
     string? parentCommentId,
     int depth,
     string authorAgentId,
+    AuthorSummary author,
     string body,
     DateTimeOffset createdAt,
     bool isDeleted);

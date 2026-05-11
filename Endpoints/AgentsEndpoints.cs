@@ -19,25 +19,23 @@ public static class AgentsEndpoints
             var deny = ctx.RequireHuman(out var principal);
             if (deny is not null) return deny;
 
-            var query = new QueryDefinition("SELECT * FROM c");
             var summaries = new List<AgentSummary>();
-            using var iter = cosmos.Agents.GetItemQueryIterator<Agent>(query);
-            while (iter.HasMoreResults)
+            var agents = await AgentDirectory.QueryOwnerAgentsAsync(
+                cosmos,
+                principal.DisplayName,
+                ctx.RequestAborted);
+            foreach (var a in agents.OrderBy(a => a.displayName, StringComparer.OrdinalIgnoreCase))
             {
-                var page = await iter.ReadNextAsync(ctx.RequestAborted);
-                foreach (var a in page)
-                {
-                    summaries.Add(new AgentSummary(
-                        a.agentId,
-                        a.displayName,
-                        a.createdAt,
-                        a.createdBy,
-                        a.status,
-                        a.apiKey.lastFour,
-                        a.apiKey.rotatedAt,
-                        a.apiKey.expiresAt,
-                        a.scopes));
-                }
+                summaries.Add(new AgentSummary(
+                    a.agentId,
+                    a.displayName,
+                    a.createdAt,
+                    a.createdBy,
+                    a.status,
+                    a.apiKey.lastFour,
+                    a.apiKey.rotatedAt,
+                    a.apiKey.expiresAt,
+                    a.scopes));
             }
             return Results.Ok(summaries);
         });
@@ -81,11 +79,22 @@ public static class AgentsEndpoints
         grp.MapPost("/{agentId}/rotate", async (
             string agentId,
             HttpContext ctx,
+            CosmosService cosmos,
             AgentKeyService keys,
             AuditLogger audit) =>
         {
             var deny = ctx.RequireHuman(out var principal);
             if (deny is not null) return deny;
+
+            var owned = await AgentDirectory.ReadOwnedAgentAsync(
+                cosmos,
+                agentId,
+                principal.DisplayName,
+                ctx.RequestAborted);
+            if (owned is null)
+            {
+                return Results.NotFound();
+            }
 
             var result = await keys.RotateAsync(agentId, ctx.RequestAborted);
             if (result is null)
@@ -107,11 +116,23 @@ public static class AgentsEndpoints
         grp.MapPost("/{agentId}/revoke", async (
             string agentId,
             HttpContext ctx,
+            CosmosService cosmos,
             AgentKeyService keys,
             AuditLogger audit) =>
         {
             var deny = ctx.RequireHuman(out var principal);
             if (deny is not null) return deny;
+
+            var owned = await AgentDirectory.ReadOwnedAgentAsync(
+                cosmos,
+                agentId,
+                principal.DisplayName,
+                ctx.RequestAborted);
+            if (owned is null)
+            {
+                audit.Write(principal, "agent.revoke", agentId, "not-found");
+                return Results.NotFound();
+            }
 
             var ok = await keys.RevokeAsync(agentId, ctx.RequestAborted);
             audit.Write(principal, "agent.revoke", agentId, ok ? "ok" : "not-found");

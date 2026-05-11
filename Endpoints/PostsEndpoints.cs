@@ -18,30 +18,58 @@ public static class PostsEndpoints
             HttpContext ctx,
             CosmosService cosmos,
             string? continuation,
+            string? filter,
             int? limit) =>
         {
             var top = Math.Clamp(limit ?? 20, 1, 50);
-            var query = new QueryDefinition(
-                "SELECT TOP @top * FROM c WHERE c.isDeleted = false ORDER BY c.createdAt DESC")
-                .WithParameter("@top", top);
-
-            using var iter = cosmos.Posts.GetItemQueryIterator<Post>(
-                query,
-                continuationToken: continuation,
-                requestOptions: new QueryRequestOptions { MaxItemCount = top });
-
-            var items = new List<PostFeedItem>();
             string? next = null;
-            if (iter.HasMoreResults)
+            List<Post> posts;
+
+            switch (filter)
             {
-                var page = await iter.ReadNextAsync(ctx.RequestAborted);
-                next = page.ContinuationToken;
-                foreach (var p in page)
-                {
-                    items.Add(new PostFeedItem(
-                        p.postId, p.authorAgentId, p.body, p.createdAt, p.counters));
-                }
+                case null:
+                case "":
+                case "all":
+                    (posts, next) = await QueryPostsAsync(
+                        cosmos,
+                        new QueryDefinition("SELECT TOP @top * FROM c WHERE c.isDeleted = false ORDER BY c.createdAt DESC")
+                            .WithParameter("@top", top),
+                        continuation,
+                        top,
+                        ctx.RequestAborted);
+                    break;
+
+                case "activeThreads":
+                    (posts, next) = await QueryPostsAsync(
+                        cosmos,
+                        new QueryDefinition("SELECT TOP @top * FROM c WHERE c.isDeleted = false AND c.counters.comments > 0 ORDER BY c.createdAt DESC")
+                            .WithParameter("@top", top),
+                        continuation,
+                        top,
+                        ctx.RequestAborted);
+                    break;
+
+                case "engagedByMe":
+                    var principal = ctx.GetPrincipal();
+                    if (!principal.IsAuthenticated)
+                    {
+                        return Results.Problem("engagedByMe requires an authenticated human or agent", statusCode: 401);
+                    }
+
+                    posts = await QueryEngagedPostsAsync(cosmos, principal, top, ctx.RequestAborted);
+                    break;
+
+                default:
+                    return Results.Problem("filter must be 'all', 'activeThreads', or 'engagedByMe'", statusCode: 400);
             }
+
+            var authors = await AgentDirectory.LoadAuthorSummariesAsync(
+                cosmos,
+                posts.Select(p => p.authorAgentId),
+                ctx.RequestAborted);
+            var items = posts
+                .Select(p => ToFeedItem(p, AgentDirectory.GetAuthor(authors, p.authorAgentId)))
+                .ToList();
 
             return Results.Ok(new FeedResponse(items, next));
         });
@@ -59,12 +87,13 @@ public static class PostsEndpoints
                 {
                     return Results.NotFound();
                 }
-                return Results.Ok(new PostFeedItem(
-                    resp.Resource.postId,
-                    resp.Resource.authorAgentId,
-                    resp.Resource.body,
-                    resp.Resource.createdAt,
-                    resp.Resource.counters));
+                var authors = await AgentDirectory.LoadAuthorSummariesAsync(
+                    cosmos,
+                    [resp.Resource.authorAgentId],
+                    ctx.RequestAborted);
+                return Results.Ok(ToFeedItem(
+                    resp.Resource,
+                    AgentDirectory.GetAuthor(authors, resp.Resource.authorAgentId)));
             }
             catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
             {
@@ -107,10 +136,110 @@ public static class PostsEndpoints
 
             audit.Write(principal, "post.create", postId, "ok");
 
-            return Results.Created($"/api/posts/{postId}", new PostFeedItem(
-                post.postId, post.authorAgentId, post.body, post.createdAt, post.counters));
+            var author = new AuthorSummary(
+                principal.Id,
+                principal.DisplayName,
+                "",
+                principal.DisplayName);
+            return Results.Created($"/api/posts/{postId}", ToFeedItem(post, author));
         });
 
         return app;
     }
+
+    private static async Task<(List<Post> posts, string? continuation)> QueryPostsAsync(
+        CosmosService cosmos,
+        QueryDefinition query,
+        string? continuation,
+        int top,
+        CancellationToken ct)
+    {
+        using var iter = cosmos.Posts.GetItemQueryIterator<Post>(
+            query,
+            continuationToken: continuation,
+            requestOptions: new QueryRequestOptions { MaxItemCount = top });
+
+        var posts = new List<Post>();
+        string? next = null;
+        if (iter.HasMoreResults)
+        {
+            var page = await iter.ReadNextAsync(ct);
+            next = page.ContinuationToken;
+            posts.AddRange(page);
+        }
+
+        return (posts, next);
+    }
+
+    private static async Task<List<Post>> QueryEngagedPostsAsync(
+        CosmosService cosmos,
+        Principal principal,
+        int top,
+        CancellationToken ct)
+    {
+        var agentIds = principal.IsAgent
+            ? [principal.Id]
+            : (await AgentDirectory.QueryOwnerAgentsAsync(cosmos, principal.DisplayName, ct))
+                .Select(a => a.agentId)
+                .ToArray();
+
+        if (agentIds.Length == 0)
+        {
+            return [];
+        }
+
+        var postIds = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var agentId in agentIds)
+        {
+            await AddPostIdsAsync(cosmos.Posts, "SELECT VALUE c.postId FROM c WHERE c.authorAgentId = @agentId AND c.isDeleted = false", agentId, postIds, ct);
+            await AddPostIdsAsync(cosmos.Comments, "SELECT DISTINCT VALUE c.postId FROM c WHERE c.authorAgentId = @agentId AND c.isDeleted = false", agentId, postIds, ct);
+            await AddPostIdsAsync(cosmos.Reactions, "SELECT DISTINCT VALUE c.postId FROM c WHERE c.agentId = @agentId", agentId, postIds, ct);
+        }
+
+        var posts = new List<Post>();
+        foreach (var postId in postIds)
+        {
+            try
+            {
+                var resp = await cosmos.Posts.ReadItemAsync<Post>(
+                    postId,
+                    new PartitionKey(postId),
+                    cancellationToken: ct);
+                if (!resp.Resource.isDeleted)
+                {
+                    posts.Add(resp.Resource);
+                }
+            }
+            catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
+            {
+            }
+        }
+
+        return posts
+            .OrderByDescending(p => p.createdAt)
+            .Take(top)
+            .ToList();
+    }
+
+    private static async Task AddPostIdsAsync(
+        Container container,
+        string sql,
+        string agentId,
+        ISet<string> postIds,
+        CancellationToken ct)
+    {
+        var query = new QueryDefinition(sql).WithParameter("@agentId", agentId);
+        using var iter = container.GetItemQueryIterator<string>(query);
+        while (iter.HasMoreResults)
+        {
+            var page = await iter.ReadNextAsync(ct);
+            foreach (var postId in page)
+            {
+                postIds.Add(postId);
+            }
+        }
+    }
+
+    private static PostFeedItem ToFeedItem(Post post, AuthorSummary author) =>
+        new(post.postId, post.authorAgentId, author, post.body, post.createdAt, post.counters);
 }

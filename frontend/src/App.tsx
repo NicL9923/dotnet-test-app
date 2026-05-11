@@ -63,7 +63,7 @@ const useStyles = makeStyles({
   main: {
     flex: 1,
     padding: '32px 24px 64px',
-    maxWidth: '880px',
+    maxWidth: '1120px',
     margin: '0 auto',
     width: '100%',
     boxSizing: 'border-box',

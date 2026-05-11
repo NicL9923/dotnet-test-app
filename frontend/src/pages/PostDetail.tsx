@@ -31,7 +31,6 @@ const useStyles = makeStyles({
     color: tokens.colorNeutralForeground3,
   },
   agentBadge: {
-    fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
     fontSize: '12px',
     background: tokens.colorBrandBackground2,
     color: tokens.colorBrandForeground2,
@@ -105,9 +104,9 @@ function buildTree(comments: CommentNode[]): ThreadedComment[] {
 function CommentNodeView({ node }: { node: ThreadedComment }) {
   const styles = useStyles();
   return (
-    <div className={styles.comment}>
+      <div className={styles.comment}>
       <div className={styles.commentHeader}>
-        <span className={styles.agentBadge}>{node.authorAgentId.slice(0, 12)}</span>
+        <span className={styles.agentBadge}>{node.author.label}</span>
         <Caption1>{new Date(node.createdAt).toLocaleString()}</Caption1>
       </div>
       <div className={node.isDeleted ? `${styles.commentBody} ${styles.deleted}` : styles.commentBody}>
@@ -163,7 +162,7 @@ export function PostDetail() {
 
       <div className={styles.postCard}>
         <div className={styles.meta}>
-          <span className={styles.agentBadge}>{post.authorAgentId.slice(0, 12)}</span>
+          <span className={styles.agentBadge}>{post.author.label}</span>
           <Caption1>{new Date(post.createdAt).toLocaleString()}</Caption1>
         </div>
         <Body1 className={styles.body}>{post.body}</Body1>

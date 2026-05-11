@@ -19,7 +19,7 @@ import {
   DialogActions,
   DialogContent,
 } from '@fluentui/react-components';
-import { AddRegular, ArrowResetRegular, DeleteRegular } from '@fluentui/react-icons';
+import { AddRegular, ArrowResetRegular, DeleteRegular, CopyRegular, CheckmarkRegular } from '@fluentui/react-icons';
 import {
   listAgents,
   createAgent,
@@ -86,6 +86,14 @@ const useStyles = makeStyles({
     fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
     wordBreak: 'break-all',
     fontSize: '13px',
+    flex: 1,
+    minWidth: 0,
+  },
+  keyRow: {
+    display: 'flex',
+    alignItems: 'stretch',
+    gap: '8px',
+    marginTop: '8px',
   },
 });
 
@@ -95,6 +103,7 @@ export function Agents({ principal }: { principal: Principal | null }) {
   const [error, setError] = useState<string | null>(null);
   const [newName, setNewName] = useState('');
   const [revealedKey, setRevealedKey] = useState<CreateAgentResponse | null>(null);
+  const [keyCopied, setKeyCopied] = useState(false);
 
   const isHuman = principal?.kind === 'Human' || principal?.kind === 'Dev';
 
@@ -124,6 +133,7 @@ export function Agents({ principal }: { principal: Principal | null }) {
     try {
       const res = await createAgent(newName.trim());
       setRevealedKey(res);
+      setKeyCopied(false);
       setNewName('');
       await refresh();
     } catch (e) {
@@ -135,9 +145,21 @@ export function Agents({ principal }: { principal: Principal | null }) {
     try {
       const res = await rotateAgent(agentId);
       setRevealedKey(res);
+      setKeyCopied(false);
       await refresh();
     } catch (e) {
       setError((e as Error).message);
+    }
+  };
+
+  const onCopyKey = async () => {
+    if (!revealedKey) return;
+    try {
+      await navigator.clipboard.writeText(revealedKey.apiKey);
+      setKeyCopied(true);
+      setTimeout(() => setKeyCopied(false), 2000);
+    } catch (e) {
+      setError(`Couldn't copy to clipboard: ${(e as Error).message}`);
     }
   };
 
@@ -194,13 +216,22 @@ export function Agents({ principal }: { principal: Principal | null }) {
         <MessageBar intent="warning" style={{ marginBottom: '12px' }}>
           <MessageBarBody>
             <strong>Save this key now — it will not be shown again.</strong>
-            <div className={styles.keyDisplay} style={{ marginTop: '8px' }}>
-              {revealedKey.apiKey}
+            <div className={styles.keyRow}>
+              <div className={styles.keyDisplay}>
+                {revealedKey.apiKey}
+              </div>
+              <Button
+                appearance="secondary"
+                icon={keyCopied ? <CheckmarkRegular /> : <CopyRegular />}
+                onClick={onCopyKey}
+              >
+                {keyCopied ? 'Copied' : 'Copy'}
+              </Button>
             </div>
             <Caption1 style={{ display: 'block', marginTop: '6px' }}>
               Agent: {revealedKey.displayName} ({revealedKey.agentId}) — expires {new Date(revealedKey.expiresAt).toLocaleDateString()}
             </Caption1>
-            <Button appearance="subtle" onClick={() => setRevealedKey(null)} style={{ marginTop: '8px' }}>
+            <Button appearance="primary" onClick={() => setRevealedKey(null)} style={{ marginTop: '12px' }}>
               I've saved it
             </Button>
           </MessageBarBody>

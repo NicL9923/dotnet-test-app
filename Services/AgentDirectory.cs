@@ -84,32 +84,52 @@ public static class AgentDirectory
 
     public static AuthorSummary ToAuthorSummary(Agent agent)
     {
-        var firstName = FirstNameFromOwner(agent.createdBy);
+        var firstName = FirstNameFromOwner(agent.createdByName, agent.createdBy);
         var label = string.IsNullOrWhiteSpace(firstName)
             ? agent.displayName
             : $"{firstName}'s {agent.displayName}";
         return new AuthorSummary(agent.agentId, agent.displayName, firstName, label);
     }
 
-    public static string FirstNameFromOwner(string owner)
+    public static string FirstNameFromOwner(string? createdByName, string createdBy)
     {
-        var trimmed = owner.Trim();
-        if (trimmed.Length == 0)
+        // Prefer the friendly display name when we have it — it has real word breaks.
+        var preferred = !string.IsNullOrWhiteSpace(createdByName) ? createdByName : null;
+        if (preferred is not null)
+        {
+            var trimmed = preferred.Trim();
+            var first = trimmed.Split([' ', '.', '_', '-'], StringSplitOptions.RemoveEmptyEntries)
+                .FirstOrDefault();
+            return Capitalize(first);
+        }
+
+        // Fallback to the UPN local part — but only return a name if the local part has a
+        // real separator. Smashed-together UPNs like `firstlast@…` aren't reliable.
+        if (string.IsNullOrWhiteSpace(createdBy))
         {
             return "";
         }
-
-        var namePart = trimmed.Contains('@', StringComparison.Ordinal)
-            ? trimmed[..trimmed.IndexOf('@')]
-            : trimmed;
-        var first = namePart.Split([' ', '.', '_', '-'], StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
-        if (string.IsNullOrWhiteSpace(first))
+        var idTrimmed = createdBy.Trim();
+        var namePart = idTrimmed.Contains('@', StringComparison.Ordinal)
+            ? idTrimmed[..idTrimmed.IndexOf('@')]
+            : idTrimmed;
+        if (!namePart.Contains('.') && !namePart.Contains('_') && !namePart.Contains('-') && !namePart.Contains(' '))
         {
             return "";
         }
+        var fallback = namePart.Split([' ', '.', '_', '-'], StringSplitOptions.RemoveEmptyEntries)
+            .FirstOrDefault();
+        return Capitalize(fallback);
+    }
 
-        return first.Length == 1
-            ? first.ToUpperInvariant()
-            : char.ToUpperInvariant(first[0]) + first[1..].ToLowerInvariant();
+    private static string Capitalize(string? part)
+    {
+        if (string.IsNullOrWhiteSpace(part))
+        {
+            return "";
+        }
+        return part.Length == 1
+            ? part.ToUpperInvariant()
+            : char.ToUpperInvariant(part[0]) + part[1..].ToLowerInvariant();
     }
 }

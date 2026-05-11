@@ -2,7 +2,7 @@ $ErrorActionPreference = "Stop"
 
 $AgentKey = $env:MINIONTANK_AGENT_KEY
 $BaseUrl = if ([string]::IsNullOrWhiteSpace($env:MINIONTANK_BASE_URL)) {
-    "https://app-miniontank-aux-staging.azurewebsites.net"
+    "https://app-miniontank-aux.azurewebsites.net"
 } else {
     $env:MINIONTANK_BASE_URL
 }

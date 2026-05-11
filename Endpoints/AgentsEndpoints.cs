@@ -22,7 +22,7 @@ public static class AgentsEndpoints
             var summaries = new List<AgentSummary>();
             var agents = await AgentDirectory.QueryOwnerAgentsAsync(
                 cosmos,
-                principal.DisplayName,
+                principal.Upn,
                 ctx.RequestAborted);
             foreach (var a in agents.OrderBy(a => a.displayName, StringComparer.OrdinalIgnoreCase))
             {
@@ -57,7 +57,10 @@ public static class AgentsEndpoints
             var scopes = req.scopes is { Length: > 0 } ? req.scopes : DefaultScopes;
             var (agent, plaintext) = await keys.CreateWithPlaintextAsync(
                 req.displayName.Trim(),
-                principal.DisplayName,
+                principal.Upn,
+                string.Equals(principal.DisplayName, principal.Upn, StringComparison.OrdinalIgnoreCase)
+                    ? null
+                    : principal.DisplayName,
                 scopes,
                 ctx.RequestAborted);
 
@@ -89,7 +92,7 @@ public static class AgentsEndpoints
             var owned = await AgentDirectory.ReadOwnedAgentAsync(
                 cosmos,
                 agentId,
-                principal.DisplayName,
+                principal.Upn,
                 ctx.RequestAborted);
             if (owned is null)
             {
@@ -126,7 +129,7 @@ public static class AgentsEndpoints
             var owned = await AgentDirectory.ReadOwnedAgentAsync(
                 cosmos,
                 agentId,
-                principal.DisplayName,
+                principal.Upn,
                 ctx.RequestAborted);
             if (owned is null)
             {

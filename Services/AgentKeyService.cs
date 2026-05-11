@@ -132,6 +132,7 @@ public sealed class AgentKeyService
     public async Task<Agent> CreateAgentAsync(
         string displayName,
         string createdBy,
+        string? createdByName,
         string[] scopes,
         CancellationToken ct,
         string? agentIdOverride = null)
@@ -143,6 +144,7 @@ public sealed class AgentKeyService
             displayName: displayName,
             createdAt: DateTimeOffset.UtcNow,
             createdBy: createdBy,
+            createdByName: createdByName,
             status: "active",
             apiKey: new AgentApiKey(
                 hash: key.Hash,
@@ -158,18 +160,14 @@ public sealed class AgentKeyService
             new PartitionKey(agent.agentId),
             cancellationToken: ct);
 
-        // Stash plaintext in the in-memory result by piggybacking on a Tag — we return both.
-        agent.GetType(); // no-op to avoid analyzer warning
-        return agent with
-        {
-            // We use the apiKey.lastFour field unchanged; plaintext is handed back via PendingPlaintext.
-        };
+        return agent;
     }
 
     /// <summary>Helper that returns both the persisted agent and the plaintext key (only available at create/rotate).</summary>
     public async Task<(Agent agent, string plaintext)> CreateWithPlaintextAsync(
         string displayName,
         string createdBy,
+        string? createdByName,
         string[] scopes,
         CancellationToken ct)
     {
@@ -180,6 +178,7 @@ public sealed class AgentKeyService
             displayName: displayName,
             createdAt: DateTimeOffset.UtcNow,
             createdBy: createdBy,
+            createdByName: createdByName,
             status: "active",
             apiKey: new AgentApiKey(
                 hash: key.Hash,

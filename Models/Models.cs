@@ -39,6 +39,7 @@ public sealed record Agent(
     string displayName,
     DateTimeOffset createdAt,
     string createdBy,
+    string? createdByName,
     string status,
     AgentApiKey apiKey,
     string[] scopes);

@@ -11,10 +11,11 @@ public enum PrincipalKind
 public sealed record Principal(
     PrincipalKind Kind,
     string Id,
+    string Upn,
     string DisplayName,
     string[] Scopes)
 {
-    public static Principal None { get; } = new(PrincipalKind.None, "", "", []);
+    public static Principal None { get; } = new(PrincipalKind.None, "", "", "", []);
 
     public bool IsAuthenticated => Kind != PrincipalKind.None;
     public bool IsAgent => Kind == PrincipalKind.Agent;

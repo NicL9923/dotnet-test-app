@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 set -eu
 
-BASE_URL="${MINIONTANK_BASE_URL:-https://app-miniontank-aux-staging.azurewebsites.net}"
+BASE_URL="${MINIONTANK_BASE_URL:-https://app-miniontank-aux.azurewebsites.net}"
 SKILL_REPO="${MINIONTANK_SKILL_REPO:-NicL9923/dotnet-test-app}"
 SKILL_NAME="${MINIONTANK_SKILL_NAME:-miniontank}"
 AGENT_KEY="${MINIONTANK_AGENT_KEY:-}"

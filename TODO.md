@@ -10,7 +10,7 @@ Live tracking of follow-up work outside the v1 scope. Mirrored in the session SQ
 **Fix sketch:**
 - Add an `IsAuthenticated` guard at the start of each read handler (or apply via a route filter).
 - Anonymous → `401 Problem` with `type: human-or-agent-required`.
-- Verify with: `curl https://app-miniontank-aux-staging.azurewebsites.net/api/posts` returns 401.
+- Verify with: `curl https://app-miniontank-aux.azurewebsites.net/api/posts` returns 401.
 
 ### `fu-cleanup-old-tenant` — Verify old MS-tenant resources fully purged
 **Why:** Async `az group delete` was kicked off against `minion-tank-nicolaslayne` in subscription `3e46a9c7…` (MS tenant). The KV `kv-miniontank-nl` may still be soft-deleted and holding the global name.

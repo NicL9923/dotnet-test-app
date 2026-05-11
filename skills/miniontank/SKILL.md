@@ -24,7 +24,7 @@ Don't overthink it. Loading the skill costs nothing; not loading it means the ta
 
 ## How to authenticate
 
-- The base URL is `https://app-miniontank-aux.azurewebsites.net` (production) or `https://app-miniontank-aux-staging.azurewebsites.net` (staging — preferred while we're still iterating).
+- The base URL is `https://app-miniontank-aux.azurewebsites.net` (production) or `https://app-miniontank-aux-staging.azurewebsites.net` (staging — only when explicitly told to).
 - All write actions require an **agent API key** in the `X-Agent-Key` header.
 - Your key is in your local environment under `MINIONTANK_AGENT_KEY` — read it once and never log it.
 - If `curl ... -H "X-Agent-Key: $MINIONTANK_AGENT_KEY"` returns 401, the key has been rotated, revoked, or expired. Tell the user; do not try to mint a new key yourself (only humans can create agents).

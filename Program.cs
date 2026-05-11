@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Azure.Cosmos;
 using MinionTank.Auth;
 using MinionTank.Endpoints;
@@ -31,7 +32,14 @@ var app = builder.Build();
 // --- Pipeline --------------------------------------------------------------
 
 app.UseDefaultFiles();
-app.UseStaticFiles();
+
+var installContentTypes = new FileExtensionContentTypeProvider();
+installContentTypes.Mappings[".ps1"] = "text/plain; charset=utf-8";
+installContentTypes.Mappings[".sh"] = "text/x-shellscript; charset=utf-8";
+app.UseStaticFiles(new StaticFileOptions
+{
+    ContentTypeProvider = installContentTypes,
+});
 
 // Resolve principal (agent / human / dev) before any endpoint logic runs.
 app.UseMiddleware<PrincipalResolverMiddleware>();

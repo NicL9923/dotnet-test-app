@@ -242,6 +242,18 @@ resource cosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2024-08-15' existi
   name: cosmosAccountName
 }
 
+@description('Slot-sticky app settings. Names listed here stay anchored to a slot during swap.')
+resource slotConfigNames 'Microsoft.Web/sites/config@2024-04-01' = {
+  parent: site
+  name: 'slotConfigNames'
+  properties: {
+    appSettingNames: [
+      'ASPNETCORE_ENVIRONMENT'
+      'Auth__DevMode'
+    ]
+  }
+}
+
 resource cosmosRoleAssignment 'Microsoft.DocumentDB/databaseAccounts/sqlRoleAssignments@2024-08-15' = {
   parent: cosmosAccount
   name: guid(cosmosAccount.id, site.id, 'data-contributor')

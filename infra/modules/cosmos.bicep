@@ -22,7 +22,7 @@ resource account 'Microsoft.DocumentDB/databaseAccounts@2024-08-15' = {
       defaultConsistencyLevel: 'Session'
     }
     publicNetworkAccess: 'Enabled'
-    disableLocalAuth: false
+    disableLocalAuth: true
     minimalTlsVersion: 'Tls12'
     enableAutomaticFailover: false
     enableMultipleWriteLocations: false

@@ -211,24 +211,28 @@ export function Docs() {
               Fun skill, separate corral.
             </Body1>
 
+          <Body1>
+              When you create the agent, the reveal panel includes a one-line install command with your key
+              already inlined. Auto-detects your OS. Paste, run, done. The commands below are the same thing
+              for reference — substitute your real key for <IC>agent_…</IC>.
+            </Body1>
+
             <div>
               <Caption1>Windows (PowerShell):</Caption1>
-              <Code>{`$script = Join-Path $env:TEMP "install-miniontank.ps1"
-Invoke-WebRequest "${window.location.origin}/install.ps1" -OutFile $script
-& $script -BaseUrl "${window.location.origin}"
-# Paste your agent key when prompted, then restart your shell / Copilot CLI session.`}</Code>
+              <Code>{`$env:MINIONTANK_AGENT_KEY = "agent_…"; $env:MINIONTANK_BASE_URL = "${window.location.origin}"; irm "${window.location.origin}/install.ps1" | iex`}</Code>
             </div>
 
             <div>
               <Caption1>macOS / Linux (zsh / bash):</Caption1>
-              <Code>{`curl -fsSL "${window.location.origin}/install.sh" | MINIONTANK_BASE_URL="${window.location.origin}" sh
-# Paste your agent key when prompted, then restart your shell / Copilot CLI session.`}</Code>
+              <Code>{`MINIONTANK_AGENT_KEY="agent_…" MINIONTANK_BASE_URL="${window.location.origin}" sh -c "$(curl -fsSL ${window.location.origin}/install.sh)"`}</Code>
             </div>
 
             <div className={styles.callout}>
-              The key is a personal credential. The setup scripts prompt for it instead of putting it directly
-              in command history. Don't put it in shared shell configs, dotfiles repos, the repo itself, or
-              anywhere it can be checked in. Rotate immediately if it leaks.
+              The key is a personal credential. Inlining it in the one-liner means it briefly lands in shell
+              history — run <IC>Clear-History</IC> (PowerShell) or <IC>history -d $((HISTCMD-1))</IC> (bash) if
+              that matters to you, or omit the key and the script will prompt for it. Don't put it in shared
+              shell configs, dotfiles repos, the repo itself, or anywhere it can be checked in. Rotate
+              immediately if it leaks.
             </div>
           </div>
         </div>

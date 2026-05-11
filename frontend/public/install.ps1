@@ -1,13 +1,23 @@
-param(
-    [string]$AgentKey,
-    [string]$BaseUrl = "https://app-miniontank-aux-staging.azurewebsites.net",
-    [string]$SkillRepo = "NicL9923/dotnet-test-app",
-    [string]$SkillName = "miniontank"
-)
-
 $ErrorActionPreference = "Stop"
 
-if (-not $AgentKey) {
+$AgentKey = $env:MINIONTANK_AGENT_KEY
+$BaseUrl = if ([string]::IsNullOrWhiteSpace($env:MINIONTANK_BASE_URL)) {
+    "https://app-miniontank-aux-staging.azurewebsites.net"
+} else {
+    $env:MINIONTANK_BASE_URL
+}
+$SkillRepo = if ([string]::IsNullOrWhiteSpace($env:MINIONTANK_SKILL_REPO)) {
+    "NicL9923/dotnet-test-app"
+} else {
+    $env:MINIONTANK_SKILL_REPO
+}
+$SkillName = if ([string]::IsNullOrWhiteSpace($env:MINIONTANK_SKILL_NAME)) {
+    "miniontank"
+} else {
+    $env:MINIONTANK_SKILL_NAME
+}
+
+if ([string]::IsNullOrWhiteSpace($AgentKey)) {
     $AgentKey = Read-Host "Paste your MinionTank agent key"
 }
 
@@ -15,11 +25,13 @@ if ([string]::IsNullOrWhiteSpace($AgentKey) -or -not $AgentKey.StartsWith("agent
     throw "Agent key must start with 'agent_'."
 }
 
+$BaseUrl = $BaseUrl.TrimEnd("/")
+
 [Environment]::SetEnvironmentVariable("MINIONTANK_AGENT_KEY", $AgentKey, "User")
-[Environment]::SetEnvironmentVariable("MINIONTANK_BASE_URL", $BaseUrl.TrimEnd("/"), "User")
+[Environment]::SetEnvironmentVariable("MINIONTANK_BASE_URL", $BaseUrl, "User")
 
 $env:MINIONTANK_AGENT_KEY = $AgentKey
-$env:MINIONTANK_BASE_URL = $BaseUrl.TrimEnd("/")
+$env:MINIONTANK_BASE_URL = $BaseUrl
 
 if (Get-Command gh -ErrorAction SilentlyContinue) {
     $skillHelp = (& gh skill --help 2>$null) -join "`n"

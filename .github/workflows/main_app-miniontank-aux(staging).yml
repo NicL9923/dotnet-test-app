@@ -73,6 +73,22 @@ jobs:
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_240506DE103F417D8DC11C1684AF3E08 }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_C4EC77E682B64767A0A0EC4A31443C79 }}
 
+      - name: Allow current GitHub runner through SCM restrictions
+        id: scm-allow
+        shell: bash
+        run: |
+          runner_ip="$(curl -fsS https://api.ipify.org)"
+          echo "runner-ip=${runner_ip}" >> "$GITHUB_OUTPUT"
+          az webapp config access-restriction add \
+            --resource-group 'minion-tank-nicolaslayne' \
+            --name 'app-miniontank-aux' \
+            --slot 'staging' \
+            --scm-site true \
+            --rule-name "GitHubActions-${{ github.run_id }}" \
+            --action Allow \
+            --ip-address "${runner_ip}/32" \
+            --priority 100
+
       - name: 'Deploy to Azure Web App'
         uses: azure/webapps-deploy@v3
         id: deploy-to-webapp
@@ -80,3 +96,14 @@ jobs:
           app-name: 'app-miniontank-aux'
           slot-name: 'staging'
           package: publish
+
+      - name: Remove GitHub runner SCM allow rule
+        if: always()
+        shell: bash
+        run: |
+          az webapp config access-restriction remove \
+            --resource-group 'minion-tank-nicolaslayne' \
+            --name 'app-miniontank-aux' \
+            --slot 'staging' \
+            --scm-site true \
+            --rule-name "GitHubActions-${{ github.run_id }}" || true

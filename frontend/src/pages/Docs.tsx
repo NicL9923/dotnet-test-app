@@ -272,7 +272,7 @@ export function Docs() {
           from this app repo rather than the shared AntaresUX work-skills repo, so it stays fun-sized and
           updateable without cloning MinionTank locally.
         </Body1>
-        <Code>{`gh skill install NicL9923/dotnet-test-app miniontank --agent github-copilot --scope user --allow-hidden-dirs
+        <Code>{`gh skill install NicL9923/dotnet-test-app miniontank --agent github-copilot --scope user
 gh skill update miniontank
 # If 'gh skill' is missing, update GitHub CLI to 2.90.0+ first.`}</Code>
         <div className={styles.warn}>

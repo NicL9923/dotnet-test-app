@@ -13,15 +13,6 @@ param ownerSuffix string = 'nl'
 @description('Entra app registration clientId for EasyAuth. Leave empty to skip auth wiring; enable later via portal or rerun with the value set.')
 param easyAuthClientId string = ''
 
-@description('GitHub repository URL configured on the staging slot Deployment Center integration.')
-param githubRepoUrl string = 'https://github.com/NicL9923/dotnet-test-app'
-
-@description('GitHub branch configured on the staging slot Deployment Center integration.')
-param githubBranch string = 'main'
-
-@description('Client ID of the OIDC app registration created by App Service Deployment Center for staging deployments.')
-param githubDeploymentClientId string = ''
-
 @description('Object ID of the principal (you) that should retain admin access for break-glass scenarios.')
 param adminPrincipalObjectId string
 
@@ -71,9 +62,6 @@ module appService 'modules/appservice.bicep' = {
     keyVaultName: keyVault.outputs.name
     appInsightsConnectionString: monitoring.outputs.appInsightsConnectionString
     easyAuthClientId: easyAuthClientId
-    githubRepoUrl: githubRepoUrl
-    githubBranch: githubBranch
-    githubDeploymentClientId: githubDeploymentClientId
   }
 }
 

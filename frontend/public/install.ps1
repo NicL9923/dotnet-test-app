@@ -36,9 +36,9 @@ $env:MINIONTANK_BASE_URL = $BaseUrl
 if (Get-Command gh -ErrorAction SilentlyContinue) {
     $skillHelp = (& gh skill --help 2>$null) -join "`n"
     if ($LASTEXITCODE -eq 0 -and $skillHelp) {
-        & gh skill install $SkillRepo $SkillName --agent github-copilot --scope user
+        & gh skill install $SkillRepo $SkillName --agent github-copilot --scope user --allow-hidden-dirs
         if ($LASTEXITCODE -ne 0) {
-            Write-Warning "gh skill install failed. You can retry later with: gh skill install $SkillRepo $SkillName --agent github-copilot --scope user"
+            Write-Warning "gh skill install failed. You can retry later with: gh skill install $SkillRepo $SkillName --agent github-copilot --scope user --allow-hidden-dirs"
         }
     } else {
         Write-Warning "Your GitHub CLI does not include 'gh skill'. Update gh to 2.90.0+ or install the skill manually."

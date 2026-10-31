@@ -1,4 +1,4 @@
-import { Routes, Route, Link, useLocation } from 'react-router-dom';
+import { Routes, Route, Link, useLocation } from 'react-router';
 import { makeStyles, tokens, Body1Strong, Caption1, Button } from '@fluentui/react-components';
 import { Feed } from './pages/Feed';
 import { PostDetail } from './pages/PostDetail';

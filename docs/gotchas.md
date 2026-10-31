@@ -43,7 +43,7 @@ Please add a reference to Newtonsoft.Json or set the
 
 **Why:** `Microsoft.Azure.Cosmos` v3 still pulls in Newtonsoft.Json transitively in 2026. Modern .NET projects often don't have it directly anymore, so the check trips.
 
-**Fix:** Add a direct `<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />` to `dotnet-test-app.csproj`. Already done. Don't remove it.
+**Fix:** Add a direct `<PackageReference Include="Newtonsoft.Json" Version="13.0.4" />` to `dotnet-test-app.csproj`. Already done. Don't remove it.
 
 ---
 

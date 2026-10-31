@@ -391,55 +391,57 @@ export function Agents({ principal }: { principal: Principal | null }) {
       ) : agents.length === 0 ? (
         <Body1>No agents yet.</Body1>
       ) : (
-        <table className={styles.table}>
-          <thead>
-            <tr>
-              <th className={styles.th}>Name</th>
-              <th className={styles.th}>Agent ID</th>
-              <th className={styles.th}>Created by</th>
-              <th className={styles.th}>Status</th>
-              <th className={styles.th}>Last 4</th>
-              <th className={styles.th}>Expires</th>
-              <th className={styles.th}>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {agents.map((a) => (
-              <tr key={a.agentId}>
-                <td className={styles.td}>{a.displayName}</td>
-                <td className={`${styles.td} ${styles.mono}`}>{a.agentId.slice(0, 16)}…</td>
-                <td className={styles.td}>{a.createdBy}</td>
-                <td className={styles.td}>
-                  <span className={`${styles.status} ${a.status === 'active' ? styles.active : styles.revoked}`}>
-                    {a.status}
-                  </span>
-                </td>
-                <td className={`${styles.td} ${styles.mono}`}>…{a.lastFour}</td>
-                <td className={styles.td}>{new Date(a.expiresAt).toLocaleDateString()}</td>
-                <td className={styles.td}>
-                  <Button
-                    appearance="subtle"
-                    icon={<ArrowResetRegular />}
-                    size="small"
-                    onClick={() => onRotate(a.agentId)}
-                  >
-                    Rotate
-                  </Button>
-                  {a.status === 'active' && (
+        <div role="region" aria-label="Agents table" tabIndex={0} style={{ overflowX: 'auto', maxWidth: '100%' }}>
+          <table className={styles.table}>
+            <thead>
+              <tr>
+                <th className={styles.th}>Name</th>
+                <th className={styles.th}>Agent ID</th>
+                <th className={styles.th}>Created by</th>
+                <th className={styles.th}>Status</th>
+                <th className={styles.th}>Last 4</th>
+                <th className={styles.th}>Expires</th>
+                <th className={styles.th}>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {agents.map((a) => (
+                <tr key={a.agentId}>
+                  <td className={styles.td}>{a.displayName}</td>
+                  <td className={`${styles.td} ${styles.mono}`}>{a.agentId.slice(0, 16)}…</td>
+                  <td className={styles.td}>{a.createdBy}</td>
+                  <td className={styles.td}>
+                    <span className={`${styles.status} ${a.status === 'active' ? styles.active : styles.revoked}`}>
+                      {a.status}
+                    </span>
+                  </td>
+                  <td className={`${styles.td} ${styles.mono}`}>…{a.lastFour}</td>
+                  <td className={styles.td}>{new Date(a.expiresAt).toLocaleDateString()}</td>
+                  <td className={styles.td}>
                     <Button
                       appearance="subtle"
-                      icon={<DeleteRegular />}
+                      icon={<ArrowResetRegular />}
                       size="small"
-                      onClick={() => onRevoke(a.agentId)}
+                      onClick={() => onRotate(a.agentId)}
                     >
-                      Revoke
+                      Rotate
                     </Button>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                    {a.status === 'active' && (
+                      <Button
+                        appearance="subtle"
+                        icon={<DeleteRegular />}
+                        size="small"
+                        onClick={() => onRevoke(a.agentId)}
+                      >
+                        Revoke
+                      </Button>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   );

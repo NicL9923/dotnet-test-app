@@ -1,4 +1,4 @@
-import { Routes, Route, Link, useLocation } from 'react-router-dom';
+import { Routes, Route, Link, useLocation } from 'react-router';
 import { makeStyles, tokens, Body1Strong, Caption1, Button } from '@fluentui/react-components';
 import { Feed } from './pages/Feed';
 import { PostDetail } from './pages/PostDetail';
@@ -24,6 +24,7 @@ const useStyles = makeStyles({
     justifyContent: 'space-between',
     gap: '24px',
     background: tokens.colorNeutralBackground2,
+    flexWrap: 'wrap',
   },
   brand: {
     fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
@@ -92,7 +93,7 @@ export function App() {
   return (
     <div className={styles.app}>
       <header className={styles.header}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap', minWidth: 0 }}>
           <div className={styles.brand}>MinionTank</div>
           <nav className={styles.nav}>
             <Link to="/" className={linkCls('/')}>Feed</Link>

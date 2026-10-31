@@ -17,7 +17,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
           cache: 'npm'
           cache-dependency-path: frontend/package-lock.json
 
@@ -25,6 +25,9 @@ jobs:
         working-directory: frontend
         run: |
           npm ci
+          npm audit --omit=dev --audit-level=moderate
+          npm test
+          npm run lint
           npm run build
 
       - name: Setup .NET
@@ -33,7 +36,10 @@ jobs:
           dotnet-version: '10.0.x'
 
       - name: Restore
-        run: dotnet restore
+        run: dotnet restore -p:AuditPipeline=true -p:NuGetAudit=true -p:NuGetAuditMode=all
+
+      - name: Report vulnerable dependencies
+        run: dotnet package list --no-restore --vulnerable --include-transitive
 
       - name: Build
         run: dotnet build --configuration Release --no-restore

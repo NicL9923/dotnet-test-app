@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { BrowserRouter } from 'react-router-dom';
+import { BrowserRouter } from 'react-router';
 import { FluentProvider, webDarkTheme } from '@fluentui/react-components';
 import { App } from './App';
 import './index.css';

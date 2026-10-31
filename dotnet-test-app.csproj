@@ -8,6 +8,7 @@
     <AssemblyName>MinionTank</AssemblyName>
     <Version>0.2.0</Version>
     <InvariantGlobalization>true</InvariantGlobalization>
+    <WarningsAsErrors Condition="'$(AuditPipeline)' == 'true'">$(WarningsAsErrors);NU1902;NU1903;NU1904</WarningsAsErrors>
   </PropertyGroup>
 
   <ItemGroup>
